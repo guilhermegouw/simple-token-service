@@ -1,0 +1,32 @@
+[project]
+name = "simple-token-service"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "guilhermegouw",email = "guilherme.gouw@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django (>=5.2.3,<6.0.0)",
+    "djangorestframework (>=3.16.0,<4.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+isort = "^6.0.1"
+flake8 = "^7.2.0"
+pytest-django = "^4.11.1"
+factory-boy = "^3.3.3"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "core.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "-v --tb=short --reuse-db"
+testpaths = ["."]
+# django_find_project = false
