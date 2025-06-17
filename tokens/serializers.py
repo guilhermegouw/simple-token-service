@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from tokens.models import Token
+
 from companies.models import Company
+from tokens.models import Token
 
 
 class TokenGenerationSerializer(serializers.Serializer):
@@ -40,20 +41,36 @@ class TokenGenerationSerializer(serializers.Serializer):
 
 class TokenValidationSerializer(serializers.Serializer):
     token = serializers.CharField(max_length=255)
-
-    def validate_token(self, value):
-        """Validate token exists and is active"""
-        token_hash = Token.hash_token(value)
+    company_name = serializers.CharField(max_length=255)
+    
+    def validate(self, data):
+        """Validate token exists, is active, and belongs to the company"""
+        token_hash = Token.hash_token(data['token'])
         
         try:
-            token = Token.objects.get(token_hash=token_hash)
+            token = Token.objects.get(token_hash=token_hash, company__name=data['company_name'])
         except Token.DoesNotExist:
-            raise serializers.ValidationError("Invalid token")
-
+            token_exists = Token.objects.filter(token_hash=token_hash).exists()
+            if not token_exists:
+                raise serializers.ValidationError({
+                    'token': 'Token does not exist'
+                })
+            else:
+                raise serializers.ValidationError({
+                    'company_name': 'Token does not belong to this company'
+                })
+                
         if not token.is_valid():
-            raise serializers.ValidationError("Token is not active")
-
-        return value
+            if not token.active:
+                raise serializers.ValidationError({
+                    'token': 'Token is inactive'
+                })
+            elif not token.company.active:
+                raise serializers.ValidationError({
+                    'company_name': 'Company is inactive'
+                })
+                
+        return data
 
 
 class TokenResponseSerializer(serializers.Serializer):

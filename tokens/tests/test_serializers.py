@@ -1,10 +1,11 @@
 import pytest
 from rest_framework.exceptions import ValidationError
-from tokens.serializers import TokenGenerationSerializer, TokenValidationSerializer
-from companies.tests.factories import CompanyFactory, InactiveCompanyFactory
-from tokens.tests.factories import TokenFactory, InactiveTokenFactory
 
+from companies.tests.factories import CompanyFactory, InactiveCompanyFactory
 from tokens.models import Token
+from tokens.serializers import (TokenGenerationSerializer,
+                                TokenValidationSerializer)
+from tokens.tests.factories import InactiveTokenFactory, TokenFactory
 
 
 @pytest.mark.django_db
@@ -67,23 +68,28 @@ class TestTokenValidationSerializer:
     def test_valid_token_validation(self):
         """Test validation of valid, active token"""
         token = TokenFactory(token="test-token-123")
-        data = {'token': 'test-token-123'}
+        data = {'token': 'test-token-123', 'company_name': token.company.name}
         
         serializer = TokenValidationSerializer(data=data)
         assert serializer.is_valid()
 
     def test_invalid_token_rejected(self):
         """Test validation of non-existent token"""
-        data = {'token': 'non-existent-token'}
+        company = CompanyFactory()
+        data = {'token': 'non-existent-token', 'company_name': company.name}
         
         serializer = TokenValidationSerializer(data=data)
         assert not serializer.is_valid()
         assert 'token' in serializer.errors
+        assert 'Token does not exist' in str(serializer.errors['token'])
 
-    def test_inactive_token_rejected(self):
-        """Test validation of inactive token"""
-        token = InactiveTokenFactory(token="inactive-token")
-        data = {'token': 'inactive-token'}
+    def test_wrong_company_rejected(self):
+        """Test validation of token with wrong company"""
+        token = TokenFactory(token="test-token-123")
+        other_company = CompanyFactory()
+        data = {'token': 'test-token-123', 'company_name': other_company.name}
+        
         serializer = TokenValidationSerializer(data=data)
-
         assert not serializer.is_valid()
+        assert 'company_name' in serializer.errors
+        assert 'Token does not belong to this company' in str(serializer.errors['company_name'])

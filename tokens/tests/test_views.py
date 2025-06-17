@@ -1,8 +1,9 @@
 import pytest
-from rest_framework.test import APIClient
 from rest_framework import status
+from rest_framework.test import APIClient
+
 from companies.tests.factories import CompanyFactory, InactiveCompanyFactory
-from tokens.tests.factories import TokenFactory, InactiveTokenFactory
+from tokens.tests.factories import InactiveTokenFactory, TokenFactory
 
 
 @pytest.mark.django_db
@@ -96,7 +97,7 @@ class TestTokenValidationView:
     def test_valid_token_validation(self):
         """Test validation of valid, active token"""
         token = TokenFactory(token="test-token-123")
-        data = {'token': 'test-token-123'}
+        data = {'token': 'test-token-123', 'company_name': token.company.name}
         
         response = self.client.post(self.url, data, format='json')
         
