@@ -152,16 +152,18 @@ curl -X POST http://localhost:8000/api/tokens/ \
 ```
 
 ### 3. Token Validation
+Validate if a token is active and belongs to the specified company.
 
-Validate if a token is active and valid.
-
-**Endpoint:** `POST /tokens/validate/`
+**Endpoint:** `POST /api/tokens/validate/`
 
 **Request:**
 ```bash
 curl -X POST http://localhost:8000/api/tokens/validate/ \
   -H "Content-Type: application/json" \
-  -d '{"token": "e881044c-96d1-458a-918c-66f0d5bd8272"}'
+  -d '{
+    "token": "e881044c-96d1-458a-918c-66f0d5bd8272",
+    "company_name": "YourCompanyName"
+  }'
 ```
 
 **Success Response (200) - Valid token:**
@@ -179,6 +181,35 @@ curl -X POST http://localhost:8000/api/tokens/validate/ \
   "message": "Token is invalid or inactive"
 }
 ```
+
+**Error Response (400) - Field-specific errors:**
+```json
+{
+  "token": ["Token does not exist"]
+}
+```
+
+```json
+{
+  "company_name": ["Token does not belong to this company"]
+}
+```
+
+```json
+{
+  "token": ["Token is inactive"]
+}
+```
+
+```json
+{
+  "company_name": ["Company is inactive"]
+}
+```
+
+**Required Fields:**
+- `token`: The token to validate
+- `company_name`: The name of the company that should own the token
 
 ## Complete Workflow Example
 
@@ -208,8 +239,7 @@ TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.token')
 # 3. Validate the token
 VALIDATION=$(curl -s -X POST http://localhost:8000/api/tokens/validate/ \
   -H "Content-Type: application/json" \
-  -d "{\"token\": \"$TOKEN\"}")
-
+  -d "{\"token\": \"$TOKEN\", \"company_name\": \"$COMPANY_NAME\"}")
 echo "Token Validation: $VALIDATION"
 ```
 
