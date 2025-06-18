@@ -6,12 +6,14 @@ authors = [
     {name = "guilhermegouw",email = "guilherme.gouw@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<4"
 dependencies = [
     "django (>=5.2.3,<6.0.0)",
-    "djangorestframework (>=3.16.0,<4.0.0)"
+    "djangorestframework (>=3.16.0,<4.0.0)",
+    "psycopg2-binary (>=2.9.0,<3.0.0)",
+    "dj-database-url (>=2.0.0,<3.0.0)",
+    "django-environ (>=0.12.0,<0.13.0)"
 ]
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -30,4 +32,3 @@ DJANGO_SETTINGS_MODULE = "core.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 addopts = "-v --tb=short --reuse-db"
 testpaths = ["."]
-# django_find_project = false
